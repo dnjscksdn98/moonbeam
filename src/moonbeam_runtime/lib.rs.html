@@ -1471,6 +1471,46 @@
 <span id="1466">1466</span>
 <span id="1467">1467</span>
 <span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
+<span id="1491">1491</span>
+<span id="1492">1492</span>
+<span id="1493">1493</span>
+<span id="1494">1494</span>
+<span id="1495">1495</span>
+<span id="1496">1496</span>
+<span id="1497">1497</span>
+<span id="1498">1498</span>
+<span id="1499">1499</span>
+<span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
+<span id="1504">1504</span>
+<span id="1505">1505</span>
+<span id="1506">1506</span>
+<span id="1507">1507</span>
+<span id="1508">1508</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019-2022 PureStake Inc.</span>
 <span class="comment">// This file is part of Moonbeam.</span>
 
@@ -1502,10 +1542,12 @@
 <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/wasm_binary.rs&quot;</span>));
 
 <span class="kw">use</span> <span class="ident">account::AccountId20</span>;
-<span class="kw">use</span> <span class="ident">cumulus_pallet_parachain_system::RelaychainBlockNumberProvider</span>;
+<span class="kw">use</span> <span class="ident">cumulus_pallet_parachain_system</span>::{<span class="ident">RelayChainStateProof</span>, <span class="ident">RelaychainBlockNumberProvider</span>};
+<span class="kw">use</span> <span class="ident">cumulus_primitives_core::relay_chain</span>;
 <span class="kw">use</span> <span class="ident">fp_rpc::TransactionStatus</span>;
 
 <span class="comment">// Re-export required by get! macro.</span>
+<span class="kw">use</span> <span class="ident">cumulus_primitives_core</span>::{<span class="ident">relay_chain::BlockNumber</span> <span class="kw">as</span> <span class="ident">RelayBlockNumber</span>, <span class="ident">DmpMessageHandler</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">fp_evm::GenesisAccount</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">frame_support::traits::Get</span>;
@@ -1515,7 +1557,7 @@
 	<span class="ident">parameter_types</span>,
 	<span class="ident">traits</span>::{
 		<span class="ident">ConstBool</span>, <span class="ident">ConstU128</span>, <span class="ident">ConstU16</span>, <span class="ident">ConstU32</span>, <span class="ident">ConstU64</span>, <span class="ident">ConstU8</span>, <span class="ident">Contains</span>,
-		<span class="ident">Currency</span> <span class="kw">as</span> <span class="ident">CurrencyT</span>, <span class="ident">EnsureOneOf</span>, <span class="ident">EqualPrivilegeOnly</span>, <span class="ident">Imbalance</span>, <span class="ident">InstanceFilter</span>,
+		<span class="ident">Currency</span> <span class="kw">as</span> <span class="ident">CurrencyT</span>, <span class="ident">EitherOfDiverse</span>, <span class="ident">EqualPrivilegeOnly</span>, <span class="ident">Imbalance</span>, <span class="ident">InstanceFilter</span>,
 		<span class="ident">OffchainWorker</span>, <span class="ident">OnFinalize</span>, <span class="ident">OnIdle</span>, <span class="ident">OnInitialize</span>, <span class="ident">OnRuntimeUpgrade</span>, <span class="ident">OnUnbalanced</span>,
 	},
 	<span class="ident">weights</span>::{
@@ -1558,8 +1600,6 @@
 	<span class="ident">SaturatedConversion</span>,
 };
 <span class="kw">use</span> <span class="ident">sp_std</span>::{<span class="ident">convert::TryFrom</span>, <span class="ident">prelude</span>::<span class="kw-2">*</span>};
-
-<span class="kw">use</span> <span class="ident">cumulus_primitives_core</span>::{<span class="ident">relay_chain::BlockNumber</span> <span class="kw">as</span> <span class="ident">RelayBlockNumber</span>, <span class="ident">DmpMessageHandler</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">sp_version::NativeVersion</span>;
@@ -1642,7 +1682,7 @@
 	<span class="ident">spec_name</span>: <span class="macro">create_runtime_str!</span>(<span class="string">&quot;moonbeam&quot;</span>),
 	<span class="ident">impl_name</span>: <span class="macro">create_runtime_str!</span>(<span class="string">&quot;moonbeam&quot;</span>),
 	<span class="ident">authoring_version</span>: <span class="number">3</span>,
-	<span class="ident">spec_version</span>: <span class="number">1700</span>,
+	<span class="ident">spec_version</span>: <span class="number">1800</span>,
 	<span class="ident">impl_version</span>: <span class="number">0</span>,
 	<span class="ident">apis</span>: <span class="ident">RUNTIME_API_VERSIONS</span>,
 	<span class="ident">transaction_version</span>: <span class="number">2</span>,
@@ -1792,6 +1832,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_transaction_payment::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
+	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
 	<span class="kw">type</span> <span class="ident">OnChargeTransaction</span> <span class="op">=</span> <span class="ident">CurrencyAdapter</span><span class="op">&lt;</span><span class="ident">Balances</span>, <span class="ident">DealWithFees</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">OperationalFeeMultiplier</span> <span class="op">=</span> <span class="ident">ConstU8</span><span class="op">&lt;</span><span class="number">5</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">WeightToFee</span> <span class="op">=</span> <span class="ident">ConstantMultiplier</span><span class="op">&lt;</span><span class="ident">Balance</span>, <span class="ident">ConstU128</span><span class="op">&lt;</span>{ <span class="ident">currency::WEIGHT_FEE</span> }<span class="op">&gt;</span><span class="op">&gt;</span>;
@@ -1982,11 +2023,15 @@
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_collective::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
 
+<span class="comment">// The purpose of this offset is to ensure that a democratic proposal will not apply in the same</span>
+<span class="comment">// block as a round change.</span>
+<span class="kw">const</span> <span class="ident">ENACTMENT_OFFSET</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">900</span>;
+
 <span class="kw">impl</span> <span class="ident">pallet_democracy::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">Call</span>;
 	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
-	<span class="kw">type</span> <span class="ident">EnactmentPeriod</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span>{ <span class="number">2</span> <span class="op">*</span> <span class="ident">DAYS</span> }<span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">EnactmentPeriod</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span>{ <span class="number">2</span> <span class="op">*</span> <span class="ident">DAYS</span> <span class="op">+</span> <span class="ident">ENACTMENT_OFFSET</span> }<span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">LaunchPeriod</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span>{ <span class="number">7</span> <span class="op">*</span> <span class="ident">DAYS</span> }<span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">VotingPeriod</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span>{ <span class="number">14</span> <span class="op">*</span> <span class="ident">DAYS</span> }<span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">VoteLockingPeriod</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span>{ <span class="number">7</span> <span class="op">*</span> <span class="ident">DAYS</span> }<span class="op">&gt;</span>;
@@ -2008,12 +2053,12 @@
 	<span class="kw">type</span> <span class="ident">InstantOrigin</span> <span class="op">=</span>
 		<span class="ident">pallet_collective::EnsureProportionAtLeast</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">TechCommitteeInstance</span>, <span class="number">3</span>, <span class="number">5</span><span class="op">&gt;</span>;
 	<span class="comment">// To cancel a proposal which has been passed.</span>
-	<span class="kw">type</span> <span class="ident">CancellationOrigin</span> <span class="op">=</span> <span class="ident">EnsureOneOf</span><span class="op">&lt;</span>
+	<span class="kw">type</span> <span class="ident">CancellationOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 		<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 		<span class="ident">pallet_collective::EnsureProportionAtLeast</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilInstance</span>, <span class="number">3</span>, <span class="number">5</span><span class="op">&gt;</span>,
 	<span class="op">&gt;</span>;
 	<span class="comment">// To cancel a proposal before it has been passed.</span>
-	<span class="kw">type</span> <span class="ident">CancelProposalOrigin</span> <span class="op">=</span> <span class="ident">EnsureOneOf</span><span class="op">&lt;</span>
+	<span class="kw">type</span> <span class="ident">CancelProposalOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 		<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 		<span class="ident">pallet_collective::EnsureProportionAtLeast</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">TechCommitteeInstance</span>, <span class="number">3</span>, <span class="number">5</span><span class="op">&gt;</span>,
 	<span class="op">&gt;</span>;
@@ -2038,12 +2083,12 @@
 	<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TreasuryId</span>: <span class="ident">PalletId</span> <span class="op">=</span> <span class="ident">PalletId</span>(<span class="kw-2">*</span><span class="string">b&quot;py/trsry&quot;</span>);
 }
 
-<span class="kw">type</span> <span class="ident">TreasuryApproveOrigin</span> <span class="op">=</span> <span class="ident">EnsureOneOf</span><span class="op">&lt;</span>
+<span class="kw">type</span> <span class="ident">TreasuryApproveOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 	<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 	<span class="ident">pallet_collective::EnsureProportionAtLeast</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilInstance</span>, <span class="number">3</span>, <span class="number">5</span><span class="op">&gt;</span>,
 <span class="op">&gt;</span>;
 
-<span class="kw">type</span> <span class="ident">TreasuryRejectOrigin</span> <span class="op">=</span> <span class="ident">EnsureOneOf</span><span class="op">&lt;</span>
+<span class="kw">type</span> <span class="ident">TreasuryRejectOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 	<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 	<span class="ident">pallet_collective::EnsureProportionMoreThan</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilInstance</span>, <span class="number">1</span>, <span class="number">2</span><span class="op">&gt;</span>,
 <span class="op">&gt;</span>;
@@ -2067,13 +2112,14 @@
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_treasury::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">SpendFunds</span> <span class="op">=</span> ();
 	<span class="kw">type</span> <span class="ident">ProposalBondMaximum</span> <span class="op">=</span> ();
+	<span class="kw">type</span> <span class="ident">SpendOrigin</span> <span class="op">=</span> <span class="ident">frame_support::traits::NeverEnsureOrigin</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span>; <span class="comment">// Same as Polkadot</span>
 }
 
-<span class="kw">type</span> <span class="ident">IdentityForceOrigin</span> <span class="op">=</span> <span class="ident">EnsureOneOf</span><span class="op">&lt;</span>
+<span class="kw">type</span> <span class="ident">IdentityForceOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 	<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 	<span class="ident">pallet_collective::EnsureProportionMoreThan</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilInstance</span>, <span class="number">1</span>, <span class="number">2</span><span class="op">&gt;</span>,
 <span class="op">&gt;</span>;
-<span class="kw">type</span> <span class="ident">IdentityRegistrarOrigin</span> <span class="op">=</span> <span class="ident">EnsureOneOf</span><span class="op">&lt;</span>
+<span class="kw">type</span> <span class="ident">IdentityRegistrarOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 	<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 	<span class="ident">pallet_collective::EnsureProportionMoreThan</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilInstance</span>, <span class="number">1</span>, <span class="number">2</span><span class="op">&gt;</span>,
 <span class="op">&gt;</span>;
@@ -2134,6 +2180,7 @@
 	<span class="kw">type</span> <span class="ident">OutboundXcmpMessageSource</span> <span class="op">=</span> <span class="ident">XcmpQueue</span>;
 	<span class="kw">type</span> <span class="ident">XcmpMessageHandler</span> <span class="op">=</span> <span class="ident">XcmpQueue</span>;
 	<span class="kw">type</span> <span class="ident">ReservedXcmpWeight</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span>{ <span class="ident">MAXIMUM_BLOCK_WEIGHT</span> <span class="op">/</span> <span class="number">4</span> }<span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">CheckAssociatedRelayNumber</span> <span class="op">=</span> <span class="ident">cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases</span>;
 }
 <span class="kw">impl</span> <span class="ident">parachain_info::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {}
 
@@ -2199,6 +2246,7 @@
 	<span class="kw">type</span> <span class="ident">MinDelegation</span> <span class="op">=</span> <span class="ident">ConstU128</span><span class="op">&lt;</span>{ <span class="number">500</span> <span class="op">*</span> <span class="ident">currency::MILLIGLMR</span> <span class="op">*</span> <span class="ident">currency::SUPPLY_FACTOR</span> }<span class="op">&gt;</span>;
 	<span class="doccomment">/// Minimum stake required to be reserved to be a delegator</span>
 	<span class="kw">type</span> <span class="ident">MinDelegatorStk</span> <span class="op">=</span> <span class="ident">ConstU128</span><span class="op">&lt;</span>{ <span class="number">500</span> <span class="op">*</span> <span class="ident">currency::MILLIGLMR</span> <span class="op">*</span> <span class="ident">currency::SUPPLY_FACTOR</span> }<span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">BlockAuthor</span> <span class="op">=</span> <span class="ident">AuthorInherent</span>;
 	<span class="kw">type</span> <span class="ident">OnCollatorPayout</span> <span class="op">=</span> <span class="ident">OnCollatorPayout</span>;
 	<span class="kw">type</span> <span class="ident">OnNewRound</span> <span class="op">=</span> <span class="ident">OnNewRound</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_parachain_staking::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
@@ -2207,7 +2255,6 @@
 <span class="kw">impl</span> <span class="ident">pallet_author_inherent::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">SlotBeacon</span> <span class="op">=</span> <span class="ident">RelaychainBlockNumberProvider</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">AccountLookup</span> <span class="op">=</span> <span class="ident">MoonbeamOrbiters</span>;
-	<span class="kw">type</span> <span class="ident">EventHandler</span> <span class="op">=</span> <span class="ident">ParachainStaking</span>;
 	<span class="kw">type</span> <span class="ident">CanAuthor</span> <span class="op">=</span> <span class="ident">AuthorFilter</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_author_inherent::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
@@ -2237,9 +2284,8 @@
 	<span class="kw">type</span> <span class="ident">RewardAddressChangeOrigin</span> <span class="op">=</span> <span class="ident">EnsureSigned</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">RewardAddressRelayVoteThreshold</span> <span class="op">=</span> <span class="ident">RelaySignaturesThreshold</span>;
 	<span class="kw">type</span> <span class="ident">SignatureNetworkIdentifier</span> <span class="op">=</span> <span class="ident">SignatureNetworkIdentifier</span>;
-	<span class="kw">type</span> <span class="ident">VestingBlockNumber</span> <span class="op">=</span> <span class="ident">cumulus_primitives_core::relay_chain::BlockNumber</span>;
-	<span class="kw">type</span> <span class="ident">VestingBlockProvider</span> <span class="op">=</span>
-		<span class="ident">cumulus_pallet_parachain_system::RelaychainBlockNumberProvider</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">VestingBlockNumber</span> <span class="op">=</span> <span class="ident">relay_chain::BlockNumber</span>;
+	<span class="kw">type</span> <span class="ident">VestingBlockProvider</span> <span class="op">=</span> <span class="ident">RelaychainBlockNumberProvider</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_crowdloan_rewards::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
 
@@ -2549,6 +2595,49 @@
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_moonbeam_orbiters::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
 
+<span class="doccomment">/// Only callable after `set_validation_data` is called which forms this proof the same way</span>
+<span class="kw">fn</span> <span class="ident">relay_chain_state_proof</span>() -&gt; <span class="ident">RelayChainStateProof</span> {
+	<span class="kw">let</span> <span class="ident">relay_storage_root</span> <span class="op">=</span> <span class="ident">ParachainSystem::validation_data</span>()
+		.<span class="ident">expect</span>(<span class="string">&quot;set in `set_validation_data`&quot;</span>)
+		.<span class="ident">relay_parent_storage_root</span>;
+	<span class="kw">let</span> <span class="ident">relay_chain_state</span> <span class="op">=</span>
+		<span class="ident">ParachainSystem::relay_state_proof</span>().<span class="ident">expect</span>(<span class="string">&quot;set in `set_validation_data`&quot;</span>);
+	<span class="ident">RelayChainStateProof::new</span>(<span class="ident">ParachainInfo::get</span>(), <span class="ident">relay_storage_root</span>, <span class="ident">relay_chain_state</span>)
+		.<span class="ident">expect</span>(<span class="string">&quot;Invalid relay chain state proof, already constructed in `set_validation_data`&quot;</span>)
+}
+
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BabeDataGetter</span>;
+<span class="kw">impl</span> <span class="ident">pallet_randomness::GetBabeData</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Hash</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BabeDataGetter</span> {
+	<span class="comment">// Tolerate panic here because only ever called in inherent (so can be omitted)</span>
+	<span class="kw">fn</span> <span class="ident">get_epoch_index</span>() -&gt; <span class="ident">u64</span> {
+		<span class="ident">relay_chain_state_proof</span>()
+			.<span class="ident">read_optional_entry</span>(<span class="ident">relay_chain::well_known_keys::EPOCH_INDEX</span>)
+			.<span class="ident">ok</span>()
+			.<span class="ident">flatten</span>()
+			.<span class="ident">expect</span>(<span class="string">&quot;expected to be able to read epoch index from relay chain state proof&quot;</span>)
+	}
+	<span class="kw">fn</span> <span class="ident">get_epoch_randomness</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Hash</span><span class="op">&gt;</span> {
+		<span class="ident">relay_chain_state_proof</span>()
+			.<span class="ident">read_optional_entry</span>(<span class="ident">relay_chain::well_known_keys::ONE_EPOCH_AGO_RANDOMNESS</span>)
+			.<span class="ident">ok</span>()
+			.<span class="ident">flatten</span>()
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">pallet_randomness::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
+	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">AddressMapping</span> <span class="op">=</span> <span class="ident">moonbeam_runtime_common::IntoAddressMapping</span>;
+	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
+	<span class="kw">type</span> <span class="ident">BabeDataGetter</span> <span class="op">=</span> <span class="ident">BabeDataGetter</span>;
+	<span class="kw">type</span> <span class="ident">VrfKeyLookup</span> <span class="op">=</span> <span class="ident">AuthorMapping</span>;
+	<span class="kw">type</span> <span class="ident">Deposit</span> <span class="op">=</span> <span class="ident">ConstU128</span><span class="op">&lt;</span>{ <span class="number">1</span> <span class="op">*</span> <span class="ident">currency::GLMR</span> <span class="op">*</span> <span class="ident">currency::SUPPLY_FACTOR</span> }<span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">MaxRandomWords</span> <span class="op">=</span> <span class="ident">ConstU8</span><span class="op">&lt;</span><span class="number">100</span><span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">MinBlockDelay</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">2</span><span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">MaxBlockDelay</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">2_000</span><span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">BlockExpirationDelay</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">10_000</span><span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">EpochExpirationDelay</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span><span class="number">10_000</span><span class="op">&gt;</span>;
+}
+
 <span class="macro">construct_runtime!</span> {
 	<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Runtime</span> <span class="kw">where</span>
 		<span class="ident">Block</span> <span class="op">=</span> <span class="ident">Block</span>,
@@ -2564,7 +2653,7 @@
 
 		<span class="comment">// Monetary stuff.</span>
 		<span class="ident">Balances</span>: <span class="ident">pallet_balances</span>::{<span class="ident">Pallet</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Config</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>} <span class="op">=</span> <span class="number">10</span>,
-		<span class="ident">TransactionPayment</span>: <span class="ident">pallet_transaction_payment</span>::{<span class="ident">Pallet</span>, <span class="ident">Storage</span>} <span class="op">=</span> <span class="number">11</span>,
+		<span class="ident">TransactionPayment</span>: <span class="ident">pallet_transaction_payment</span>::{<span class="ident">Pallet</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>} <span class="op">=</span> <span class="number">11</span>,
 
 		<span class="comment">// Consensus support.</span>
 		<span class="ident">ParachainStaking</span>: <span class="ident">pallet_parachain_staking</span>::{<span class="ident">Pallet</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Config</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>} <span class="op">=</span> <span class="number">20</span>,
@@ -2616,6 +2705,9 @@
 		<span class="ident">XTokens</span>: <span class="ident">orml_xtokens</span>::{<span class="ident">Pallet</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>} <span class="op">=</span> <span class="number">106</span>,
 		<span class="ident">XcmTransactor</span>: <span class="ident">pallet_xcm_transactor</span>::{<span class="ident">Pallet</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>} <span class="op">=</span> <span class="number">107</span>,
 		<span class="ident">LocalAssets</span>: <span class="ident">pallet_assets</span>::<span class="op">&lt;</span><span class="ident">Instance1</span><span class="op">&gt;</span>::{<span class="ident">Pallet</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>} <span class="op">=</span> <span class="number">108</span>,
+
+		<span class="comment">// Randomness</span>
+		<span class="ident">Randomness</span>: <span class="ident">pallet_randomness</span>::{<span class="ident">Pallet</span>, <span class="ident">Call</span>, <span class="ident">Storage</span>, <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Inherent</span>} <span class="op">=</span> <span class="number">120</span>,
 	}
 }
 
@@ -2661,18 +2753,6 @@
 <span class="comment">// }</span>
 <span class="comment">// ```</span>
 <span class="macro">moonbeam_runtime_common::impl_runtime_apis_plus_common!</span> {
-	<span class="kw">impl</span> <span class="ident">session_keys_primitives::VrfApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-		<span class="kw">fn</span> <span class="ident">get_last_vrf_output</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="kw">as</span> <span class="ident">BlockT</span><span class="op">&gt;</span><span class="ident">::Hash</span><span class="op">&gt;</span> {
-			<span class="prelude-val">None</span>
-		}
-		<span class="kw">fn</span> <span class="ident">vrf_key_lookup</span>(
-			<span class="ident">nimbus_id</span>: <span class="ident">nimbus_primitives::NimbusId</span>
-		) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">session_keys_primitives::VrfId</span><span class="op">&gt;</span> {
-			<span class="kw">use</span> <span class="ident">session_keys_primitives::KeysLookup</span>;
-			<span class="ident">AuthorMapping::lookup_keys</span>(<span class="kw-2">&amp;</span><span class="ident">nimbus_id</span>)
-		}
-	}
-
 	<span class="kw">impl</span> <span class="ident">sp_transaction_pool::runtime_api::TaggedTransactionQueue</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 		<span class="kw">fn</span> <span class="ident">validate_transaction</span>(
 			<span class="ident">source</span>: <span class="ident">TransactionSource</span>,

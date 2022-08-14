@@ -445,6 +445,23 @@
 <span id="440">440</span>
 <span id="441">441</span>
 <span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019-2022 PureStake Inc.</span>
 <span class="comment">// This file is part of Moonbeam.</span>
 
@@ -469,7 +486,6 @@
 <span class="kw">use</span> <span class="ident">fp_evm</span>::{<span class="ident">PrecompileHandle</span>, <span class="ident">PrecompileOutput</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
 	<span class="ident">dispatch</span>::{<span class="ident">Dispatchable</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">PostDispatchInfo</span>},
-	<span class="ident">ensure</span>,
 	<span class="ident">traits::Get</span>,
 };
 <span class="kw">use</span> <span class="ident">pallet_evm</span>::{<span class="ident">AddressMapping</span>, <span class="ident">Precompile</span>};
@@ -498,17 +514,39 @@
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">CurrencyIdOf</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">Runtime</span> <span class="kw">as</span> <span class="ident">orml_xtokens::Config</span><span class="op">&gt;</span><span class="ident">::CurrencyId</span>;
 
+<span class="kw">struct</span> <span class="ident">GetMaxAssets</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>);
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="ident">Get</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GetMaxAssets</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+	<span class="ident">R</span>: <span class="ident">orml_xtokens::Config</span>,
+{
+	<span class="kw">fn</span> <span class="ident">get</span>() -&gt; <span class="ident">u32</span> {
+		<span class="op">&lt;</span><span class="ident">R</span> <span class="kw">as</span> <span class="ident">orml_xtokens::Config</span><span class="op">&gt;</span><span class="ident">::MaxAssetsForTransfer::get</span>() <span class="kw">as</span> <span class="ident">u32</span>
+	}
+}
+
 <span class="attribute">#[<span class="ident">generate_function_selector</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Action</span> {
 	<span class="ident">Transfer</span> <span class="op">=</span> <span class="string">&quot;transfer(address,uint256,(uint8,bytes[]),uint64)&quot;</span>,
-	<span class="ident">TransferWithFee</span> <span class="op">=</span> <span class="string">&quot;transfer_with_fee(address,uint256,uint256,(uint8,bytes[]),uint64)&quot;</span>,
-	<span class="ident">TransferMultiAsset</span> <span class="op">=</span> <span class="string">&quot;transfer_multiasset((uint8,bytes[]),uint256,(uint8,bytes[]),uint64)&quot;</span>,
+	<span class="ident">TransferWithFee</span> <span class="op">=</span> <span class="string">&quot;transferWithFee(address,uint256,uint256,(uint8,bytes[]),uint64)&quot;</span>,
+	<span class="ident">TransferMultiAsset</span> <span class="op">=</span> <span class="string">&quot;transferMultiasset((uint8,bytes[]),uint256,(uint8,bytes[]),uint64)&quot;</span>,
 	<span class="ident">TransferMultiAssetWithFee</span> <span class="op">=</span>
-		<span class="string">&quot;transfer_multiasset_with_fee((uint8,bytes[]),uint256,uint256,(uint8,bytes[]),uint64)&quot;</span>,
+		<span class="string">&quot;transferMultiassetWithFee((uint8,bytes[]),uint256,uint256,(uint8,bytes[]),uint64)&quot;</span>,
 	<span class="ident">TransferMultiCurrencies</span> <span class="op">=</span>
-		<span class="string">&quot;transfer_multi_currencies((address,uint256)[],uint32,(uint8,bytes[]),uint64)&quot;</span>,
+		<span class="string">&quot;transferMultiCurrencies((address,uint256)[],uint32,(uint8,bytes[]),uint64)&quot;</span>,
 	<span class="ident">TransferMultiAssets</span> <span class="op">=</span>
+		<span class="string">&quot;transferMultiAssets(((uint8,bytes[]),uint256)[],uint32,(uint8,bytes[]),uint64)&quot;</span>,
+
+	<span class="comment">// deprecated</span>
+	<span class="ident">DeprecatedTransferWithFee</span> <span class="op">=</span> <span class="string">&quot;transfer_with_fee(address,uint256,uint256,(uint8,bytes[]),uint64)&quot;</span>,
+	<span class="ident">DeprecatedTransferMultiAsset</span> <span class="op">=</span>
+		<span class="string">&quot;transfer_multiasset((uint8,bytes[]),uint256,(uint8,bytes[]),uint64)&quot;</span>,
+	<span class="ident">DeprecatedTransferMultiAssetWithFee</span> <span class="op">=</span>
+		<span class="string">&quot;transfer_multiasset_with_fee((uint8,bytes[]),uint256,uint256,(uint8,bytes[]),uint64)&quot;</span>,
+	<span class="ident">DeprecatedTransferMultiCurrencies</span> <span class="op">=</span>
+		<span class="string">&quot;transfer_multi_currencies((address,uint256)[],uint32,(uint8,bytes[]),uint64)&quot;</span>,
+	<span class="ident">DeprecatedTransferMultiAssets</span> <span class="op">=</span>
 		<span class="string">&quot;transfer_multi_assets(((uint8,bytes[]),uint256)[],uint32,(uint8,bytes[]),uint64)&quot;</span>,
 }
 
@@ -532,11 +570,21 @@
 
 		<span class="kw">match</span> <span class="ident">selector</span> {
 			<span class="ident">Action::Transfer</span> =&gt; <span class="ident"><span class="self">Self</span>::transfer</span>(<span class="ident">handle</span>),
-			<span class="ident">Action::TransferWithFee</span> =&gt; <span class="ident"><span class="self">Self</span>::transfer_with_fee</span>(<span class="ident">handle</span>),
-			<span class="ident">Action::TransferMultiAsset</span> =&gt; <span class="ident"><span class="self">Self</span>::transfer_multiasset</span>(<span class="ident">handle</span>),
-			<span class="ident">Action::TransferMultiAssetWithFee</span> =&gt; <span class="ident"><span class="self">Self</span>::transfer_multiasset_with_fee</span>(<span class="ident">handle</span>),
-			<span class="ident">Action::TransferMultiCurrencies</span> =&gt; <span class="ident"><span class="self">Self</span>::transfer_multi_currencies</span>(<span class="ident">handle</span>),
-			<span class="ident">Action::TransferMultiAssets</span> =&gt; <span class="ident"><span class="self">Self</span>::transfer_multi_assets</span>(<span class="ident">handle</span>),
+			<span class="ident">Action::TransferWithFee</span> <span class="op">|</span> <span class="ident">Action::DeprecatedTransferWithFee</span> =&gt; {
+				<span class="ident"><span class="self">Self</span>::transfer_with_fee</span>(<span class="ident">handle</span>)
+			}
+			<span class="ident">Action::TransferMultiAsset</span> <span class="op">|</span> <span class="ident">Action::DeprecatedTransferMultiAsset</span> =&gt; {
+				<span class="ident"><span class="self">Self</span>::transfer_multiasset</span>(<span class="ident">handle</span>)
+			}
+			<span class="ident">Action::TransferMultiAssetWithFee</span> <span class="op">|</span> <span class="ident">Action::DeprecatedTransferMultiAssetWithFee</span> =&gt; {
+				<span class="ident"><span class="self">Self</span>::transfer_multiasset_with_fee</span>(<span class="ident">handle</span>)
+			}
+			<span class="ident">Action::TransferMultiCurrencies</span> <span class="op">|</span> <span class="ident">Action::DeprecatedTransferMultiCurrencies</span> =&gt; {
+				<span class="ident"><span class="self">Self</span>::transfer_multi_currencies</span>(<span class="ident">handle</span>)
+			}
+			<span class="ident">Action::TransferMultiAssets</span> <span class="op">|</span> <span class="ident">Action::DeprecatedTransferMultiAssets</span> =&gt; {
+				<span class="ident"><span class="self">Self</span>::transfer_multi_assets</span>(<span class="ident">handle</span>)
+			}
 		}
 	}
 }
@@ -717,15 +765,8 @@
 	) -&gt; <span class="ident">EvmResult</span><span class="op">&lt;</span><span class="ident">PrecompileOutput</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input</span> <span class="op">=</span> <span class="ident">handle</span>.<span class="ident">read_input</span>()<span class="question-mark">?</span>;
 		<span class="ident">input</span>.<span class="ident">expect_arguments</span>(<span class="number">4</span>)<span class="question-mark">?</span>;
-		<span class="kw">let</span> <span class="ident">non_mapped_currencies</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Currency</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Currency</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-		<span class="kw">let</span> <span class="ident">max_assets</span> <span class="op">=</span> <span class="ident">MaxAssetsForTransfer</span>::<span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span><span class="ident">::get</span>();
-
-		<span class="comment">// We check this here so that we avoid iterating over the vec</span>
-		<span class="comment">// if the len is more than the max permitted</span>
-		<span class="macro">ensure!</span>(
-			<span class="ident">max_assets</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">non_mapped_currencies</span>.<span class="ident">len</span>(),
-			<span class="ident">revert</span>(<span class="string">&quot;More than max number of assets given&quot;</span>)
-		);
+		<span class="kw">let</span> <span class="ident">non_mapped_currencies</span>: <span class="ident">BoundedVec</span><span class="op">&lt;</span><span class="ident">Currency</span>, <span class="ident">GetMaxAssets</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>()<span class="question-mark">?</span>;
+		<span class="kw">let</span> <span class="ident">non_mapped_currencies</span> <span class="op">=</span> <span class="ident">non_mapped_currencies</span>.<span class="ident">into_vec</span>();
 
 		<span class="kw">let</span> <span class="ident">fee_item</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
@@ -779,15 +820,8 @@
 	<span class="kw">fn</span> <span class="ident">transfer_multi_assets</span>(<span class="ident">handle</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">PrecompileHandle</span>) -&gt; <span class="ident">EvmResult</span><span class="op">&lt;</span><span class="ident">PrecompileOutput</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input</span> <span class="op">=</span> <span class="ident">handle</span>.<span class="ident">read_input</span>()<span class="question-mark">?</span>;
 		<span class="ident">input</span>.<span class="ident">expect_arguments</span>(<span class="number">4</span>)<span class="question-mark">?</span>;
-		<span class="kw">let</span> <span class="ident">assets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EvmMultiAsset</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EvmMultiAsset</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-		<span class="kw">let</span> <span class="ident">max_assets</span> <span class="op">=</span> <span class="ident">MaxAssetsForTransfer</span>::<span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span><span class="ident">::get</span>();
-
-		<span class="comment">// We check this here so that we avoid iterating over the vec</span>
-		<span class="comment">// if the len is more than the max permitted</span>
-		<span class="macro">ensure!</span>(
-			<span class="ident">max_assets</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">assets</span>.<span class="ident">len</span>(),
-			<span class="ident">revert</span>(<span class="string">&quot;More than max number of assets given&quot;</span>)
-		);
+		<span class="kw">let</span> <span class="ident">assets</span>: <span class="ident">BoundedVec</span><span class="op">&lt;</span><span class="ident">EvmMultiAsset</span>, <span class="ident">GetMaxAssets</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>()<span class="question-mark">?</span>;
+		<span class="kw">let</span> <span class="ident">assets</span> <span class="op">=</span> <span class="ident">assets</span>.<span class="ident">into_vec</span>();
 
 		<span class="kw">let</span> <span class="ident">fee_item</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
